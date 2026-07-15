@@ -6,6 +6,23 @@ long. Built with [Tauri](https://tauri.app/) 2, SvelteKit, and Rust.
 
 ![Dashboard, dark mode](docs/dashboard-dark.png)
 
+## Install (macOS)
+
+Download the latest `.dmg` from
+[Releases](https://github.com/inajaf/cpu-animation/releases), open it, and
+drag **Performance Monitor** into Applications.
+
+The app is not signed with an Apple Developer ID yet, so Gatekeeper will warn
+on first launch. Either:
+
+- **Right-click the app → Open → Open** (needed once), or
+- macOS 15+: open **System Settings → Privacy & Security**, scroll to the
+  blocked-app notice, and click **Open Anyway**, or
+- from a terminal: `xattr -cr "/Applications/Performance Monitor.app"`
+
+Signing + notarization (which removes the warning) requires an Apple
+Developer membership and is planned.
+
 ## Features
 
 - **Tray-first UX** — lives in the menu bar; click the tray icon to toggle the
