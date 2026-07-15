@@ -19,6 +19,8 @@ jobs:
           cache: npm
 
       - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-apple-darwin,x86_64-apple-darwin
 
       - uses: swatinem/rust-cache@v2
         with:
@@ -26,21 +28,20 @@ jobs:
 
       - run: npm ci
 
-      - run: npm run tauri build
+      # Universal binary: runs natively on Apple Silicon and Intel Macs.
+      - run: npm run tauri build -- --target universal-apple-darwin
 
       - name: Stage artifacts
         # Versioned names for humans; stable names so the Homebrew cask can
         # point at releases/latest/download/ and never need updating.
         run: |
           VERSION="${GITHUB_REF_NAME#v}"
+          BUNDLE="src-tauri/target/universal-apple-darwin/release/bundle"
           mkdir -p dist
-          cp "src-tauri/target/release/bundle/dmg/Performance Monitor_${VERSION}_aarch64.dmg" \
-             "dist/Performance.Monitor_${VERSION}_aarch64.dmg"
-          ditto -c -k --keepParent \
-             "src-tauri/target/release/bundle/macos/Performance Monitor.app" \
-             "dist/Performance.Monitor_${VERSION}_aarch64.zip"
-          cp "dist/Performance.Monitor_${VERSION}_aarch64.dmg" "dist/Performance.Monitor_aarch64.dmg"
-          cp "dist/Performance.Monitor_${VERSION}_aarch64.zip" "dist/Performance.Monitor_aarch64.zip"
+          cp "$BUNDLE/dmg/Pulsebar_${VERSION}_universal.dmg" "dist/Pulsebar_${VERSION}_universal.dmg"
+          ditto -c -k --keepParent "$BUNDLE/macos/Pulsebar.app" "dist/Pulsebar_${VERSION}_universal.zip"
+          cp "dist/Pulsebar_${VERSION}_universal.dmg" "dist/Pulsebar_universal.dmg"
+          cp "dist/Pulsebar_${VERSION}_universal.zip" "dist/Pulsebar_universal.zip"
           (cd dist && shasum -a 256 * > SHA256SUMS.txt)
 
       - name: Create GitHub release
@@ -49,5 +50,5 @@ jobs:
         run: |
           gh release create "$GITHUB_REF_NAME" dist/* \
             --verify-tag \
-            --title "Performance Monitor $GITHUB_REF_NAME" \
+            --title "Pulsebar $GITHUB_REF_NAME" \
             --generate-notes

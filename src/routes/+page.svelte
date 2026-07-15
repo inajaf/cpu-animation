@@ -38,7 +38,7 @@
   <div class="dashboard-header">
     <div class="header-title">
       <span class="live-dot"></span>
-      <h1>System Monitor</h1>
+      <h1>Pulsebar</h1>
     </div>
     <span class="timestamp">{lastUpdated}</span>
   </div>

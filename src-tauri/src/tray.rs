@@ -16,7 +16,7 @@ pub fn build(app: &AppHandle) -> tauri::Result<()> {
 
     let mut builder = TrayIconBuilder::with_id(TRAY_ID)
         .menu(&menu)
-        .tooltip("Performance Monitor")
+        .tooltip("Pulsebar")
         .on_menu_event(|app, event| match event.id().as_ref() {
             "show" => show_main_window(app),
             "quit" => app.exit(0),

@@ -126,7 +126,7 @@ fn spawn_disk_scan_loop(app: tauri::AppHandle) {
 fn format_tooltip(snapshot: &MetricsSnapshot) -> String {
     let fmt = |p: Option<f32>| p.map(|v| format!("{v:.0}%")).unwrap_or_else(|| "--".into());
     format!(
-        "Performance Monitor\nCPU {}  ·  RAM {}  ·  GPU {}",
+        "Pulsebar\nCPU {}  ·  RAM {}  ·  GPU {}",
         fmt(snapshot.cpu.percent),
         fmt(snapshot.ram.percent),
         fmt(snapshot.gpu.percent)

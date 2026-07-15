@@ -1,8 +1,10 @@
-# Performance Monitor
+# Pulsebar
 
 A lightweight macOS/Windows menu bar app that shows live CPU, RAM, Disk, and GPU
 usage, with native notifications when a metric stays critically high for too
 long. Built with [Tauri](https://tauri.app/) 2, SvelteKit, and Rust.
+
+Runs natively on both Apple Silicon and Intel Macs (universal binary).
 
 ![Live dashboard demo](docs/demo.gif)
 
@@ -14,7 +16,7 @@ long. Built with [Tauri](https://tauri.app/) 2, SvelteKit, and Rust.
 
 ```bash
 brew tap inajaf/tap
-brew install --cask performance-monitor
+brew install --cask pulsebar
 ```
 
 The cask tracks the latest release automatically and clears the quarantine
@@ -23,8 +25,8 @@ flag, so the Gatekeeper warning below does not apply.
 ### Manual download
 
 Download the latest `.dmg` from
-[Releases](https://github.com/inajaf/cpu-animation/releases), open it, and
-drag **Performance Monitor** into Applications.
+[Releases](https://github.com/inajaf/pulsebar/releases), open it, and
+drag **Pulsebar** into Applications.
 
 The app is not signed with an Apple Developer ID yet, so Gatekeeper will warn
 on first launch. Either:
@@ -32,7 +34,7 @@ on first launch. Either:
 - **Right-click the app → Open → Open** (needed once), or
 - macOS 15+: open **System Settings → Privacy & Security**, scroll to the
   blocked-app notice, and click **Open Anyway**, or
-- from a terminal: `xattr -cr "/Applications/Performance Monitor.app"`
+- from a terminal: `xattr -cr /Applications/Pulsebar.app`
 
 Signing + notarization (which removes the warning) requires an Apple
 Developer membership and is planned.
