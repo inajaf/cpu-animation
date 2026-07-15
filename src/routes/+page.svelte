@@ -8,6 +8,11 @@
   let stop: (() => void) | null = null;
 
   onMount(async () => {
+    // Inside Tauri the window is transparent + vibrancy-backed; the .native
+    // tokens make the UI a dark glass HUD over it.
+    if ("__TAURI_INTERNALS__" in window) {
+      document.documentElement.classList.add("native");
+    }
     stop = await startMetricsStream();
   });
 
@@ -40,7 +45,7 @@
 
   <div class="grid">
     <MetricCard label="CPU" icon="cpu" metric={$metrics.cpu} history={cpuHistory} />
-    <MetricCard label="GPU" icon="gpu" metric={$metrics.gpu} history={gpuHistory} />
+    <MetricCard label="GPU" icon="gpu" metric={$metrics.gpu} history={gpuHistory} showBytes />
     <MetricCard label="Memory" icon="ram" metric={$metrics.ram} history={ramHistory} showBytes />
     <MetricCard label="Disk" icon="disk" metric={$metrics.disk} history={diskHistory} showBytes />
   </div>

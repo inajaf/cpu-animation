@@ -10,6 +10,7 @@
     "frontendDist": "../build"
   },
   "app": {
+    "macOSPrivateApi": true,
     "windows": [
       {
         "label": "main",
@@ -19,7 +20,13 @@
         "minWidth": 340,
         "minHeight": 480,
         "resizable": true,
-        "visible": false
+        "visible": false,
+        "transparent": true,
+        "windowEffects": {
+          "effects": ["hudWindow", "acrylic"],
+          "state": "active",
+          "radius": 18
+        }
       }
     ],
     "security": {

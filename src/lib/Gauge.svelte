@@ -70,32 +70,47 @@
       <stop offset="0%" stop-color="var(--danger-2)" />
       <stop offset="100%" stop-color="var(--danger)" />
     </linearGradient>
+    <!-- Dashed overlay carves both track and fill into HUD-style segments. -->
+    <mask id="{uid}-seg">
+      <path
+        d={arcPath}
+        pathLength="100"
+        stroke="#fff"
+        stroke-width={strokeWidth + 3}
+        fill="none"
+        stroke-dasharray="1.1 0.55"
+        stroke-dashoffset="0.55"
+      />
+    </mask>
   </defs>
 
   {#each ticks as t}
     <line class="gauge-tick" x1={t.x1} y1={t.y1} x2={t.x2} y2={t.y2} />
   {/each}
 
-  <path
-    class="gauge-track"
-    d={arcPath}
-    pathLength="100"
-    stroke-width={strokeWidth}
-    fill="none"
-    stroke-linecap="round"
-  />
-
-  {#if value !== null}
+  <g mask="url(#{uid}-seg)">
     <path
-      class="gauge-fill"
+      class="gauge-track"
       d={arcPath}
       pathLength="100"
       stroke-width={strokeWidth}
       fill="none"
-      stroke-linecap="round"
-      stroke-dasharray="{$display} 100"
-      stroke="url(#{uid}-{gradient})"
     />
+
+    {#if value !== null}
+      <path
+        class="gauge-fill"
+        d={arcPath}
+        pathLength="100"
+        stroke-width={strokeWidth}
+        fill="none"
+        stroke-dasharray="{$display} 100"
+        stroke="url(#{uid}-{gradient})"
+      />
+    {/if}
+  </g>
+
+  {#if value !== null}
     <circle class="gauge-tip" cx={tip.x} cy={tip.y} r="2.5" />
   {/if}
 </svg>
@@ -133,6 +148,11 @@
     stroke: var(--danger-soft);
   }
 
+  .gauge[data-level="low"] .gauge-fill,
+  .gauge[data-level="medium"] .gauge-fill {
+    filter: drop-shadow(0 0 4px var(--ok-soft));
+  }
+
   .gauge[data-level="high"] .gauge-fill {
     filter: drop-shadow(0 0 5px var(--warn-soft));
   }
@@ -145,9 +165,9 @@
     filter: drop-shadow(0 0 4px var(--danger));
   }
 
+  /* Segmentation already textures the arc; unavailable just goes inert. */
   .gauge[data-level="unavailable"] .gauge-track {
     stroke: var(--border-strong);
-    stroke-dasharray: 0.8 2.4;
   }
 
   @media (prefers-reduced-motion: reduce) {

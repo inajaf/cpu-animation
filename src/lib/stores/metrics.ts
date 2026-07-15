@@ -86,7 +86,7 @@ function startDemoStream(): () => void {
       cpu: { percent: walk.cpu, used_bytes: null, total_bytes: null, temp_celsius: 52 + walk.cpu / 4 },
       ram: { percent: walk.ram, used_bytes: (walk.ram / 100) * 16 * GIB, total_bytes: 16 * GIB, temp_celsius: null },
       disk: { percent: walk.disk, used_bytes: (walk.disk / 100) * 512 * GIB, total_bytes: 512 * GIB, temp_celsius: null },
-      gpu: { percent: walk.gpu, used_bytes: null, total_bytes: null, temp_celsius: 44 + walk.gpu / 3 },
+      gpu: { percent: walk.gpu, used_bytes: (walk.gpu / 100) * 8 * GIB, total_bytes: null, temp_celsius: 44 + walk.gpu / 3 },
       timestamp_ms: Date.now(),
     };
   };

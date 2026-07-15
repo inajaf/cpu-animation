@@ -36,7 +36,8 @@ guessing:
 | ----------- | ------------- | ------------------------- |
 | CPU / RAM   | ✅ (`sysinfo`) | ✅ (`sysinfo`)             |
 | Disk        | ✅ (`sysinfo`) | ✅ (`sysinfo`)             |
-| GPU usage   | Unavailable   | ✅ NVIDIA only (NVML)      |
+| GPU usage   | ✅ (IOAccelerator `Device Utilization %` + unified memory in use) | ✅ NVIDIA only (NVML) |
+| GPU temp    | Unavailable (SMC keys are private) | ✅ NVIDIA only (NVML) |
 | CPU temp    | Unavailable   | ✅ if ACPI thermal zone exists (WMI) |
 
 ## Development

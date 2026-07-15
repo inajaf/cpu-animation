@@ -2501,6 +2501,7 @@ name = "performance-monitor"
 version = "0.1.0"
 dependencies = [
  "nvml-wrapper",
+ "plist",
  "serde",
  "serde_json",
  "sysinfo",

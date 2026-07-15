@@ -71,8 +71,12 @@
   </div>
 
   <footer class="card-foot">
-    {#if showBytes && metric.used_bytes !== null && metric.total_bytes !== null}
-      <span class="bytes">{fmtBytes(metric.used_bytes)} <em>/ {fmtBytes(metric.total_bytes)}</em></span>
+    {#if showBytes && metric.used_bytes !== null}
+      {#if metric.total_bytes !== null}
+        <span class="bytes">{fmtBytes(metric.used_bytes)} <em>/ {fmtBytes(metric.total_bytes)}</em></span>
+      {:else}
+        <span class="bytes">{fmtBytes(metric.used_bytes)} <em>in use</em></span>
+      {/if}
     {/if}
     <Sparkline values={history} />
   </footer>
@@ -80,6 +84,7 @@
 
 <style>
   .card {
+    position: relative;
     display: flex;
     flex-direction: column;
     gap: 6px;
@@ -91,6 +96,19 @@
     border-radius: var(--radius);
     box-shadow: var(--shadow);
     transition: border-color 400ms ease, box-shadow 400ms ease;
+    overflow: hidden;
+  }
+
+  /* Glass edge: a hairline highlight along the card's top. */
+  .card::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 10%;
+    right: 10%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--border-strong), transparent);
+    pointer-events: none;
   }
 
   .card[data-level="very-high"] {
