@@ -1,116 +1,60 @@
 # Pulsebar
 
-A lightweight macOS/Windows menu bar app that shows live CPU, RAM, Disk, and GPU
-usage, with native notifications when a metric stays critically high for too
-long. Built with [Tauri](https://tauri.app/) 2, SvelteKit, and Rust.
-
-Runs natively on both Apple Silicon and Intel Macs (universal binary).
+A menu bar system monitor for macOS with a glass HUD dashboard: live CPU, GPU,
+RAM, and Disk gauges, top processes, and native alerts. Universal binary
+(Apple Silicon + Intel). Built with [Tauri](https://tauri.app/) 2 and SvelteKit.
 
 ![Live dashboard demo](docs/demo.gif)
 
-<sub>Static screenshot: [docs/dashboard-dark.png](docs/dashboard-dark.png) · smaller GIF: [docs/demo-small.gif](docs/demo-small.gif)</sub>
-
-## Install (macOS)
-
-### Homebrew (recommended)
+## Install
 
 ```bash
 brew tap inajaf/tap
 brew install --cask pulsebar
 ```
 
-The cask tracks the latest release automatically and clears the quarantine
-flag, so the Gatekeeper warning below does not apply.
-
-### Manual download
-
-Download the latest `.dmg` from
-[Releases](https://github.com/inajaf/pulsebar/releases), open it, and
-drag **Pulsebar** into Applications.
-
-The app is not signed with an Apple Developer ID yet, so Gatekeeper will warn
-on first launch. Either:
-
-- **Right-click the app → Open → Open** (needed once), or
-- macOS 15+: open **System Settings → Privacy & Security**, scroll to the
-  blocked-app notice, and click **Open Anyway**, or
-- from a terminal: `xattr -cr /Applications/Pulsebar.app`
-
-Signing + notarization (which removes the warning) requires an Apple
-Developer membership and is planned.
+Or grab the `.dmg` from [Releases](https://github.com/inajaf/pulsebar/releases)
+and drag **Pulsebar** into Applications. The app isn't notarized yet, so on
+first launch either right-click → **Open**, or run
+`xattr -cr /Applications/Pulsebar.app`. (Homebrew handles this for you.)
 
 ## Features
 
-- **Tray-first UX** — lives in the menu bar; click the tray icon to toggle the
-  dashboard window, no dock icon or taskbar entry. A second launch just
-  refocuses the existing window instead of opening a duplicate instance.
-- **Instrument-panel dashboard** — a 270° arc gauge per metric with a
-  severity-driven color ramp (calm cyan → amber at 85% → glowing red at 99%),
-  a status badge at high/critical, used/total bytes (RAM, Disk), and
-  temperature where available.
-- **Sparklines** — each card keeps the last ~60 samples and draws a live
-  one-minute trend under the gauge.
-- **Top processes** — the CPU card lists the 3 heaviest processes by CPU
-  (Activity Monitor-style per-core %), the Memory card the 3 largest by
-  resident memory.
-- **Adaptive polling** — samples every 1s while the dashboard is visible,
-  backs off to every 3s while hidden, to save CPU in the background.
-- **Threshold alerts** — fires a native OS notification when a metric crosses
-  a critical threshold and *stays* there (debounced, so a brief spike won't
-  page you), then re-notifies periodically until it drops back down
-  (hysteresis-based re-arm). See `src-tauri/src/state.rs`.
-- **Light footprint** — measured on an M5 MacBook (release build, window
-  hidden): ~0.2% of one core average, ~86 MB RSS.
+- **Lives in the menu bar** — click the tray icon to toggle the dashboard;
+  no dock icon.
+- **Arc gauges with severity colors** — cyan → amber at 85% → red at 99%,
+  plus temperature and used/total bytes where available.
+- **Sparklines** — a one-minute live trend under every gauge.
+- **Top 3 lists** — heaviest processes by CPU and by memory, largest
+  installed apps by disk size.
+- **Smart alerts** — a native notification only when a metric *stays*
+  critical (debounced, re-arms with hysteresis).
+- **Light footprint** — ~0.2% of one core and ~86 MB RAM while in the
+  background (polling slows from 1s to 3s when hidden).
 
-### Known v1 gaps
+### Sensor support
 
-There's no maintained, public cross-platform API for GPU usage or CPU
-temperature, so these degrade gracefully to "Unavailable" rather than
-guessing:
-
-| Metric      | macOS         | Windows                  |
-| ----------- | ------------- | ------------------------- |
-| CPU / RAM   | ✅ (`sysinfo`) | ✅ (`sysinfo`)             |
-| Disk        | ✅ (`sysinfo`) | ✅ (`sysinfo`)             |
-| GPU usage   | ✅ (IOAccelerator `Device Utilization %` + unified memory in use) | ✅ NVIDIA only (NVML) |
-| GPU temp    | Unavailable (SMC keys are private) | ✅ NVIDIA only (NVML) |
-| CPU temp    | Unavailable   | ✅ if ACPI thermal zone exists (WMI) |
+| Metric | macOS | Windows |
+|---|---|---|
+| CPU / RAM / Disk | ✅ | ✅ |
+| GPU usage | ✅ | ✅ NVIDIA only |
+| CPU / GPU temp | — no public API | ✅ NVIDIA / ACPI |
 
 ## Development
 
 ```bash
 npm install
-npm run tauri dev
+npm run tauri dev    # full app
+npm run dev          # UI only in a browser, with demo data
+npm run check        # type-check
 ```
 
-Type-check the frontend:
+Releases are automated: pushing a `v*` tag builds a universal binary and
+publishes it via GitHub Actions (`.github/workflows/release.yml`).
 
-```bash
-npm run check
-```
+### Layout
 
-**UI work without the Rust backend:** `npm run dev` and open
-`http://localhost:1420` in a browser — outside Tauri the metrics store
-substitutes a random-walk demo stream, so the dashboard renders with moving
-(fake) data.
-
-## Release build
-
-```bash
-npm run tauri build
-```
-
-Produces `src-tauri/target/release/bundle/macos/Performance Monitor.app` and a
-`.dmg` alongside it. The bundle is unsigned; local use is fine, distribution
-needs codesigning/notarization.
-
-## Project layout
-
-- `src/` — SvelteKit dashboard UI (`routes/+page.svelte`, `lib/Gauge.svelte`,
-  `lib/MetricCard.svelte`, `lib/Sparkline.svelte`, `lib/stores/metrics.ts`)
-- `src-tauri/src/sensors/` — per-metric sampling (`cpu.rs`, `mem.rs`,
-  `disk.rs`, `gpu.rs`, `temp.rs`)
-- `src-tauri/src/tray.rs` — tray icon, menu, show/hide window behavior
-- `src-tauri/src/notify.rs` + `state.rs` — alert thresholds and native
-  notifications
-- `src-tauri/src/lib.rs` — app setup and the background metrics polling loop
+- `src/` — SvelteKit dashboard (gauges, cards, sparklines, metrics store)
+- `src-tauri/src/sensors/` — per-metric sampling
+- `src-tauri/src/lib.rs` — app setup, polling loop; `tray.rs`, `notify.rs`,
+  `state.rs` — tray, alerts, shared state
