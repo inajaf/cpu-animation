@@ -1,0 +1,53 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  build-macos:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+
+      - run: npm ci
+
+      - run: npm run tauri build
+
+      - name: Stage artifacts
+        # Versioned names for humans; stable names so the Homebrew cask can
+        # point at releases/latest/download/ and never need updating.
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          mkdir -p dist
+          cp "src-tauri/target/release/bundle/dmg/Performance Monitor_${VERSION}_aarch64.dmg" \
+             "dist/Performance.Monitor_${VERSION}_aarch64.dmg"
+          ditto -c -k --keepParent \
+             "src-tauri/target/release/bundle/macos/Performance Monitor.app" \
+             "dist/Performance.Monitor_${VERSION}_aarch64.zip"
+          cp "dist/Performance.Monitor_${VERSION}_aarch64.dmg" "dist/Performance.Monitor_aarch64.dmg"
+          cp "dist/Performance.Monitor_${VERSION}_aarch64.zip" "dist/Performance.Monitor_aarch64.zip"
+          (cd dist && shasum -a 256 * > SHA256SUMS.txt)
+
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" dist/* \
+            --verify-tag \
+            --title "Performance Monitor $GITHUB_REF_NAME" \
+            --generate-notes

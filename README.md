@@ -4,9 +4,23 @@ A lightweight macOS/Windows menu bar app that shows live CPU, RAM, Disk, and GPU
 usage, with native notifications when a metric stays critically high for too
 long. Built with [Tauri](https://tauri.app/) 2, SvelteKit, and Rust.
 
-![Dashboard, dark mode](docs/dashboard-dark.png)
+![Live dashboard demo](docs/demo.gif)
+
+<sub>Static screenshot: [docs/dashboard-dark.png](docs/dashboard-dark.png) · smaller GIF: [docs/demo-small.gif](docs/demo-small.gif)</sub>
 
 ## Install (macOS)
+
+### Homebrew (recommended)
+
+```bash
+brew tap inajaf/tap
+brew install --cask performance-monitor
+```
+
+The cask tracks the latest release automatically and clears the quarantine
+flag, so the Gatekeeper warning below does not apply.
+
+### Manual download
 
 Download the latest `.dmg` from
 [Releases](https://github.com/inajaf/cpu-animation/releases), open it, and
