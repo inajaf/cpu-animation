@@ -3,11 +3,17 @@
   import { cubicOut } from "svelte/easing";
 
   export let value: number | null = null;
-  export let size = 96;
-  export let strokeWidth = 9;
+  export let size = 104;
+  export let strokeWidth = 8;
+
+  // Unique per instance so the four gauges' gradient defs don't collide.
+  const uid = `g${Math.random().toString(36).slice(2, 8)}`;
+
+  const SWEEP = 270; // degrees of visible arc
+  const START = 135; // arc begins at bottom-left
 
   const display = tweened(0, { duration: 600, easing: cubicOut });
-  $: display.set(value ?? 0);
+  $: display.set(value === null ? 0 : Math.min(Math.max(value, 0), 100));
 
   $: level =
     value === null
@@ -20,68 +26,134 @@
             ? "medium"
             : "low";
 
-  $: radius = (size - strokeWidth) / 2;
-  $: circumference = 2 * Math.PI * radius;
-  $: offset = circumference * (1 - $display / 100);
+  $: gradient = level === "very-high" ? "danger" : level === "high" ? "warn" : "ok";
+
+  $: center = size / 2;
+  // Inset leaves room for the ticks and the tip marker's glow.
+  $: radius = (size - strokeWidth) / 2 - 5;
+
+  function polar(angleDeg: number, r: number, c: number) {
+    const a = (angleDeg * Math.PI) / 180;
+    return { x: c + r * Math.cos(a), y: c + r * Math.sin(a) };
+  }
+
+  // 270° arc path; pathLength="100" lets dasharray speak in percent.
+  $: arcPath = (() => {
+    const from = polar(START, radius, center);
+    const to = polar(START + SWEEP, radius, center);
+    return `M ${from.x} ${from.y} A ${radius} ${radius} 0 1 1 ${to.x} ${to.y}`;
+  })();
+
+  // Tip marker rides the end of the filled arc.
+  $: tip = polar(START + (SWEEP * $display) / 100, radius, center);
+
+  // Hairline ticks at 0 / 25 / 50 / 75 / 100, just outside the track.
+  $: ticks = [0, 25, 50, 75, 100].map((t) => {
+    const angle = START + (SWEEP * t) / 100;
+    const inner = polar(angle, radius + strokeWidth / 2 + 2, center);
+    const outer = polar(angle, radius + strokeWidth / 2 + 5, center);
+    return { x1: inner.x, y1: inner.y, x2: outer.x, y2: outer.y };
+  });
 </script>
 
 <svg width={size} height={size} viewBox="0 0 {size} {size}" class="gauge" data-level={level}>
-  <circle
+  <defs>
+    <linearGradient id="{uid}-ok" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="var(--ok-2)" />
+      <stop offset="100%" stop-color="var(--ok)" />
+    </linearGradient>
+    <linearGradient id="{uid}-warn" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="var(--warn-2)" />
+      <stop offset="100%" stop-color="var(--warn)" />
+    </linearGradient>
+    <linearGradient id="{uid}-danger" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="var(--danger-2)" />
+      <stop offset="100%" stop-color="var(--danger)" />
+    </linearGradient>
+  </defs>
+
+  {#each ticks as t}
+    <line class="gauge-tick" x1={t.x1} y1={t.y1} x2={t.x2} y2={t.y2} />
+  {/each}
+
+  <path
     class="gauge-track"
-    cx={size / 2}
-    cy={size / 2}
-    r={radius}
+    d={arcPath}
+    pathLength="100"
     stroke-width={strokeWidth}
     fill="none"
+    stroke-linecap="round"
   />
+
   {#if value !== null}
-    <circle
+    <path
       class="gauge-fill"
-      cx={size / 2}
-      cy={size / 2}
-      r={radius}
+      d={arcPath}
+      pathLength="100"
       stroke-width={strokeWidth}
       fill="none"
       stroke-linecap="round"
-      stroke-dasharray={circumference}
-      stroke-dashoffset={offset}
-      transform="rotate(-90 {size / 2} {size / 2})"
+      stroke-dasharray="{$display} 100"
+      stroke="url(#{uid}-{gradient})"
     />
+    <circle class="gauge-tip" cx={tip.x} cy={tip.y} r="2.5" />
   {/if}
 </svg>
 
 <style>
   .gauge-track {
-    stroke: var(--border-strong);
-  }
-
-  .gauge-fill {
+    stroke: var(--surface-strong);
     transition: stroke 400ms ease;
   }
 
-  .gauge[data-level="low"] .gauge-fill {
-    stroke: var(--accent);
+  .gauge-tick {
+    stroke: var(--border-strong);
+    stroke-width: 1;
   }
 
-  .gauge[data-level="medium"] .gauge-fill {
-    stroke: var(--primary);
+  .gauge-fill {
+    transition: filter 400ms ease;
+  }
+
+  .gauge-tip {
+    fill: var(--text);
+    transition: filter 400ms ease;
+  }
+
+  /* Meter rule: the unfilled track is a faint step of the active ramp,
+     so state reads across the whole arc, not just the filled part. */
+  .gauge[data-level="low"] .gauge-track,
+  .gauge[data-level="medium"] .gauge-track {
+    stroke: var(--ok-soft);
+  }
+  .gauge[data-level="high"] .gauge-track {
+    stroke: var(--warn-soft);
+  }
+  .gauge[data-level="very-high"] .gauge-track {
+    stroke: var(--danger-soft);
   }
 
   .gauge[data-level="high"] .gauge-fill {
-    stroke: var(--warn);
+    filter: drop-shadow(0 0 5px var(--warn-soft));
   }
 
   .gauge[data-level="very-high"] .gauge-fill {
-    stroke: var(--danger);
-    filter: drop-shadow(0 0 6px var(--danger-soft));
+    filter: drop-shadow(0 0 7px var(--danger));
+  }
+
+  .gauge[data-level="very-high"] .gauge-tip {
+    filter: drop-shadow(0 0 4px var(--danger));
   }
 
   .gauge[data-level="unavailable"] .gauge-track {
-    stroke-dasharray: 3 6;
+    stroke: var(--border-strong);
+    stroke-dasharray: 0.8 2.4;
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .gauge-fill {
+    .gauge-fill,
+    .gauge-track,
+    .gauge-tip {
       transition: none;
     }
   }

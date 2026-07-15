@@ -14,10 +14,10 @@
       {
         "label": "main",
         "title": "Performance Monitor",
-        "width": 360,
-        "height": 480,
-        "minWidth": 320,
-        "minHeight": 400,
+        "width": 384,
+        "height": 560,
+        "minWidth": 340,
+        "minHeight": 480,
         "resizable": true,
         "visible": false
       }

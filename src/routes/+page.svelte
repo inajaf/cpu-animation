@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onDestroy, onMount } from "svelte";
   import MetricCard from "$lib/MetricCard.svelte";
-  import { metrics, startMetricsStream } from "$lib/stores/metrics";
+  import { history, metrics, startMetricsStream } from "$lib/stores/metrics";
   import "$lib/styles/tokens.css";
   import "$lib/styles/app.css";
 
@@ -21,19 +21,27 @@
         minute: "2-digit",
         second: "2-digit",
       })
-    : "--";
+    : "--:--:--";
+
+  $: cpuHistory = $history.map((s) => s.cpu.percent);
+  $: gpuHistory = $history.map((s) => s.gpu.percent);
+  $: ramHistory = $history.map((s) => s.ram.percent);
+  $: diskHistory = $history.map((s) => s.disk.percent);
 </script>
 
 <div class="dashboard">
   <div class="dashboard-header">
-    <h1>Performance Monitor</h1>
+    <div class="header-title">
+      <span class="live-dot"></span>
+      <h1>System Monitor</h1>
+    </div>
     <span class="timestamp">{lastUpdated}</span>
   </div>
 
   <div class="grid">
-    <MetricCard label="CPU" icon="⚙" metric={$metrics.cpu} />
-    <MetricCard label="GPU" icon="🎮" metric={$metrics.gpu} />
-    <MetricCard label="RAM" icon="🧠" metric={$metrics.ram} showBytes />
-    <MetricCard label="Disk" icon="💾" metric={$metrics.disk} showBytes />
+    <MetricCard label="CPU" icon="cpu" metric={$metrics.cpu} history={cpuHistory} />
+    <MetricCard label="GPU" icon="gpu" metric={$metrics.gpu} history={gpuHistory} />
+    <MetricCard label="Memory" icon="ram" metric={$metrics.ram} history={ramHistory} showBytes />
+    <MetricCard label="Disk" icon="disk" metric={$metrics.disk} history={diskHistory} showBytes />
   </div>
 </div>
