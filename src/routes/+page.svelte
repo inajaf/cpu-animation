@@ -44,9 +44,9 @@
   </div>
 
   <div class="grid">
-    <MetricCard label="CPU" icon="cpu" metric={$metrics.cpu} history={cpuHistory} />
+    <MetricCard label="CPU" icon="cpu" metric={$metrics.cpu} history={cpuHistory} processes={$metrics.top_cpu} procMode="cpu" />
     <MetricCard label="GPU" icon="gpu" metric={$metrics.gpu} history={gpuHistory} showBytes />
-    <MetricCard label="Memory" icon="ram" metric={$metrics.ram} history={ramHistory} showBytes />
+    <MetricCard label="Memory" icon="ram" metric={$metrics.ram} history={ramHistory} showBytes processes={$metrics.top_mem} procMode="mem" />
     <MetricCard label="Disk" icon="disk" metric={$metrics.disk} history={diskHistory} showBytes />
   </div>
 </div>

@@ -3,13 +3,20 @@
   import { cubicOut } from "svelte/easing";
   import Gauge from "./Gauge.svelte";
   import Sparkline from "./Sparkline.svelte";
-  import type { UsageMetric } from "./stores/metrics";
+  import type { ProcessEntry, UsageMetric } from "./stores/metrics";
 
   export let label: string;
   export let icon: "cpu" | "gpu" | "ram" | "disk";
   export let metric: UsageMetric;
   export let history: (number | null)[] = [];
   export let showBytes = false;
+  /** Top processes to list under the gauge; `procMode` picks the value shown. */
+  export let processes: ProcessEntry[] = [];
+  export let procMode: "cpu" | "mem" = "cpu";
+
+  function procValue(p: ProcessEntry): string {
+    return procMode === "cpu" ? `${p.cpu_percent.toFixed(0)}%` : fmtBytes(p.mem_bytes);
+  }
 
   // Same duration/easing as the gauge so number and arc move together.
   const display = tweened(0, { duration: 600, easing: cubicOut });
@@ -69,6 +76,17 @@
       {/if}
     </div>
   </div>
+
+  {#if processes.length > 0}
+    <ul class="proc-list">
+      {#each processes as p}
+        <li class="proc-row">
+          <span class="proc-name">{p.name}</span>
+          <span class="proc-val">{procValue(p)}</span>
+        </li>
+      {/each}
+    </ul>
+  {/if}
 
   <footer class="card-foot">
     {#if showBytes && metric.used_bytes !== null}
@@ -195,6 +213,40 @@
     font-style: italic;
     text-transform: none;
     letter-spacing: 0.02em;
+  }
+
+  .proc-list {
+    list-style: none;
+    margin: 0;
+    padding: 4px 0 0;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    border-top: 1px solid var(--border);
+  }
+
+  .proc-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 8px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    line-height: 1.3;
+  }
+
+  .proc-name {
+    color: var(--muted);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    min-width: 0;
+  }
+
+  .proc-val {
+    color: var(--text);
+    font-variant-numeric: tabular-nums;
+    flex-shrink: 0;
   }
 
   .card-foot {

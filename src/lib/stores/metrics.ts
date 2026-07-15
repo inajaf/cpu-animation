@@ -9,11 +9,20 @@ export interface UsageMetric {
   temp_celsius: number | null;
 }
 
+/** cpu_percent is per-core style (Activity Monitor convention). */
+export interface ProcessEntry {
+  name: string;
+  cpu_percent: number;
+  mem_bytes: number;
+}
+
 export interface MetricsSnapshot {
   cpu: UsageMetric;
   ram: UsageMetric;
   disk: UsageMetric;
   gpu: UsageMetric;
+  top_cpu: ProcessEntry[];
+  top_mem: ProcessEntry[];
   timestamp_ms: number;
 }
 
@@ -29,6 +38,8 @@ export const EMPTY_SNAPSHOT: MetricsSnapshot = {
   ram: EMPTY_METRIC,
   disk: EMPTY_METRIC,
   gpu: EMPTY_METRIC,
+  top_cpu: [],
+  top_mem: [],
   timestamp_ms: 0,
 };
 
@@ -87,6 +98,16 @@ function startDemoStream(): () => void {
       ram: { percent: walk.ram, used_bytes: (walk.ram / 100) * 16 * GIB, total_bytes: 16 * GIB, temp_celsius: null },
       disk: { percent: walk.disk, used_bytes: (walk.disk / 100) * 512 * GIB, total_bytes: 512 * GIB, temp_celsius: null },
       gpu: { percent: walk.gpu, used_bytes: (walk.gpu / 100) * 8 * GIB, total_bytes: null, temp_celsius: 44 + walk.gpu / 3 },
+      top_cpu: [
+        { name: "WindowServer", cpu_percent: 18 + Math.random() * 30, mem_bytes: 0.9 * GIB },
+        { name: "Google Chrome", cpu_percent: 9 + Math.random() * 15, mem_bytes: 1.4 * GIB },
+        { name: "node", cpu_percent: 3 + Math.random() * 8, mem_bytes: 0.3 * GIB },
+      ],
+      top_mem: [
+        { name: "Google Chrome", cpu_percent: 12, mem_bytes: (1.3 + Math.random() * 0.4) * GIB },
+        { name: "Docker", cpu_percent: 2, mem_bytes: 1.1 * GIB },
+        { name: "WindowServer", cpu_percent: 20, mem_bytes: 0.9 * GIB },
+      ],
       timestamp_ms: Date.now(),
     };
   };

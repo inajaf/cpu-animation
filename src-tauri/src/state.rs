@@ -13,25 +13,25 @@ pub struct UsageMetric {
     pub temp_celsius: Option<f32>,
 }
 
+/// One row of the "top processes" lists. `cpu_percent` is per-core style
+/// (Activity Monitor convention — a fully busy 4-thread process reads 400%).
 #[derive(Clone, Serialize)]
+pub struct ProcessEntry {
+    pub name: String,
+    pub cpu_percent: f32,
+    pub mem_bytes: u64,
+}
+
+#[derive(Clone, Serialize, Default)]
 pub struct MetricsSnapshot {
     pub cpu: UsageMetric,
     pub ram: UsageMetric,
     pub disk: UsageMetric,
     pub gpu: UsageMetric,
+    /// Top 3 by CPU and by memory, descending.
+    pub top_cpu: Vec<ProcessEntry>,
+    pub top_mem: Vec<ProcessEntry>,
     pub timestamp_ms: u64,
-}
-
-impl Default for MetricsSnapshot {
-    fn default() -> Self {
-        Self {
-            cpu: UsageMetric::default(),
-            ram: UsageMetric::default(),
-            disk: UsageMetric::default(),
-            gpu: UsageMetric::default(),
-            timestamp_ms: 0,
-        }
-    }
 }
 
 /// Debounced threshold alert: ignores brief spikes (`sustain_for`), fires once

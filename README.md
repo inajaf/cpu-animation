@@ -17,6 +17,9 @@ long. Built with [Tauri](https://tauri.app/) 2, SvelteKit, and Rust.
   temperature where available.
 - **Sparklines** — each card keeps the last ~60 samples and draws a live
   one-minute trend under the gauge.
+- **Top processes** — the CPU card lists the 3 heaviest processes by CPU
+  (Activity Monitor-style per-core %), the Memory card the 3 largest by
+  resident memory.
 - **Adaptive polling** — samples every 1s while the dashboard is visible,
   backs off to every 3s while hidden, to save CPU in the background.
 - **Threshold alerts** — fires a native OS notification when a metric crosses
