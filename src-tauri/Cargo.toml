@@ -1,6 +1,6 @@
 [package]
 name = "performance-monitor"
-version = "0.1.0"
+version = "0.1.2"
 description = "Animated CPU/GPU/RAM/disk resource monitor with threshold notifications"
 authors = ["you"]
 edition = "2021"
